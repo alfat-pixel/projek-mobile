@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   static const String _keyUsername = 'username';
   static const String _keyLoggedIn = 'logged_in';
+  static const String _keyProfileImage = 'profile_image_path'; // key untuk foto profil
 
   // Simpel register: simpan username dan password (password disini hanya simulasi, jangan pakai ini di produksi)
   static Future<bool> register(String username, String password) async {
@@ -38,5 +39,17 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyLoggedIn, false);
     await prefs.remove(_keyUsername);
+  }
+
+  // Fungsi baru: Simpan path foto profil
+  static Future<void> saveProfileImagePath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyProfileImage, path);
+  }
+
+  // Fungsi baru: Ambil path foto profil
+  static Future<String?> getProfileImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyProfileImage);
   }
 }
