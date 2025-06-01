@@ -14,7 +14,7 @@ class Book extends HiveObject {
   final List<String> authors;
 
   @HiveField(3)
-  final String? downloadUrl;
+  final Map<String, String> downloadLinks; // semua link download format
 
   @HiveField(4)
   final String? description;
@@ -23,7 +23,7 @@ class Book extends HiveObject {
     required this.id,
     required this.title,
     required this.authors,
-    this.downloadUrl,
+    required this.downloadLinks,
     this.description,
   });
 
@@ -34,18 +34,20 @@ class Book extends HiveObject {
     }).toList();
 
     Map<String, dynamic>? formats = json['formats'];
-    String? downloadLink;
+    Map<String, String> links = {};
     if (formats != null) {
-      downloadLink = formats['application/pdf'] ??
-          formats['text/plain; charset=utf-8'] ??
-          formats['text/plain'];
+      formats.forEach((key, value) {
+        if (value is String) {
+          links[key] = value;
+        }
+      });
     }
 
     return Book(
       id: json['id'],
       title: json['title'] ?? 'No Title',
       authors: authorsList,
-      downloadUrl: downloadLink,
+      downloadLinks: links,
       description: json['subjects'] != null
           ? (json['subjects'] as List<dynamic>).join(", ")
           : null,

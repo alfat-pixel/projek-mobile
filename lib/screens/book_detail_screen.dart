@@ -24,7 +24,7 @@ class BookDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     String authors = book.authors.isNotEmpty ? book.authors.join(', ') : 'Unknown Author';
     String description = book.description ?? 'No description available';
-    String downloadUrl = book.downloadUrl ?? '';
+    final Map<String, String> downloadLinks = book.downloadLinks;
 
     return Scaffold(
       appBar: AppBar(
@@ -53,14 +53,20 @@ class BookDetailScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(description),
               const SizedBox(height: 24),
-              if (downloadUrl.isNotEmpty)
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.download),
-                  label: const Text('Download Book'),
-                  onPressed: () => _launchURL(downloadUrl),
-                )
+              if (downloadLinks.isNotEmpty)
+                ...downloadLinks.entries.map((entry) {
+                  final format = entry.key;
+                  final url = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: ElevatedButton(
+                      onPressed: () => _launchURL(url),
+                      child: Text(format),
+                    ),
+                  );
+                }).toList()
               else
-                const Text('No download link available'),
+                const Text('No download links available'),
             ],
           ),
         ),

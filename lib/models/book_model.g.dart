@@ -20,7 +20,7 @@ class BookAdapter extends TypeAdapter<Book> {
       id: fields[0] as int,
       title: fields[1] as String,
       authors: (fields[2] as List).cast<String>(),
-      downloadUrl: fields[3] as String?,
+      downloadLinks: (fields[3] as Map).cast<String, String>(),
       description: fields[4] as String?,
     );
   }
@@ -36,7 +36,7 @@ class BookAdapter extends TypeAdapter<Book> {
       ..writeByte(2)
       ..write(obj.authors)
       ..writeByte(3)
-      ..write(obj.downloadUrl)
+      ..write(obj.downloadLinks)
       ..writeByte(4)
       ..write(obj.description);
   }
