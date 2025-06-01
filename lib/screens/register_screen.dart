@@ -12,6 +12,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nimController = TextEditingController();
+  final _kelasController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -28,8 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
+    final nim = _nimController.text.trim();
+    final kelas = _kelasController.text.trim();
 
-    bool registered = await AuthService.register(username, password);
+    bool registered = await AuthService.register(username, password, nim, kelas);
 
     setState(() {
       _isLoading = false;
@@ -54,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
               TextFormField(
                 controller: _usernameController,
@@ -66,6 +70,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 validator: (val) => val == null || val.isEmpty ? 'Masukkan password' : null,
+              ),
+              TextFormField(
+                controller: _nimController,
+                decoration: const InputDecoration(labelText: 'NIM'),
+                validator: (val) => val == null || val.isEmpty ? 'Masukkan NIM' : null,
+              ),
+              TextFormField(
+                controller: _kelasController,
+                decoration: const InputDecoration(labelText: 'Kelas'),
+                validator: (val) => val == null || val.isEmpty ? 'Masukkan Kelas' : null,
               ),
               const SizedBox(height: 16),
               if (_errorMessage != null)
