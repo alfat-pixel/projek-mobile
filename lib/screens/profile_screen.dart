@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert'; // untuk base64 encode/decode
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,7 +17,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String username = '';
   String nim = '';
   String kelas = '';
-  File? _imageFile;
+
+  Uint8List? _imageBytes; // untuk preview gambar base64
 
   String selectedTimezone = 'WIB';
   String displayedTime = '';
@@ -41,23 +43,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = await AuthService.getUsername();
     final storedNim = await AuthService.getNIM();
     final storedKelas = await AuthService.getKelas();
-    final imagePath = await AuthService.getProfileImagePath();
+
+    final imageBase64 = await AuthService.getProfileImageBase64();
 
     setState(() {
       username = user ?? '';
       nim = storedNim ?? '';
       kelas = storedKelas ?? '';
-      if (imagePath != null) {
-        _imageFile = File(imagePath);
+      if (imageBase64 != null) {
+        _imageBytes = base64Decode(imageBase64);
       }
     });
   }
 
   void _startTimer() {
     _updateTime();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateTime();
-    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
   }
 
   void _updateTime() {
@@ -65,7 +66,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final offset = timezoneOffsets[selectedTimezone] ?? 0;
     final convertedTime = now.add(Duration(hours: offset));
     final formattedTime =
-        '${convertedTime.hour.toString().padLeft(2, '0')}:${convertedTime.minute.toString().padLeft(2, '0')}:${convertedTime.second.toString().padLeft(2, '0')}';
+        '${convertedTime.hour.toString().padLeft(2, '0')}:'
+        '${convertedTime.minute.toString().padLeft(2, '0')}:'
+        '${convertedTime.second.toString().padLeft(2, '0')}';
 
     setState(() {
       displayedTime = formattedTime;
@@ -73,14 +76,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageBytes = bytes;
       });
-      await AuthService.saveProfileImagePath(pickedFile.path);
+
+      // Simpan base64 string ke SharedPreferences
+      await AuthService.saveProfileImageBase64(base64Encode(bytes));
     }
   }
 
@@ -147,8 +153,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 radius: 70,
                 backgroundColor: primaryColor.withOpacity(0.2),
                 backgroundImage:
-                    _imageFile != null ? FileImage(_imageFile!) : null,
-                child: _imageFile == null
+                    _imageBytes != null ? MemoryImage(_imageBytes!) : null,
+                child: _imageBytes == null
                     ? Icon(Icons.person, size: 80, color: primaryColor)
                     : null,
               ),
