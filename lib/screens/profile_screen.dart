@@ -18,7 +18,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String kelas = '';
   File? _imageFile;
 
-  // Untuk waktu
   String selectedTimezone = 'WIB';
   String displayedTime = '';
 
@@ -98,25 +97,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Colors.deepPurple.shade600;
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: primaryColor,
         title: const Text('Profil'),
         actions: [
           Row(
             children: [
-              Text(selectedTimezone + ' ' + displayedTime,
-                  style: const TextStyle(fontSize: 16)),
+              Text(
+                '$selectedTimezone $displayedTime',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+              ),
               const SizedBox(width: 8),
               DropdownButton<String>(
                 value: selectedTimezone,
-                dropdownColor: Colors.blue,
+                dropdownColor: primaryColor,
                 underline: const SizedBox(),
                 iconEnabledColor: Colors.white,
                 items: timezoneOffsets.keys
                     .map((tz) => DropdownMenuItem(
                           value: tz,
-                          child: Text(tz,
-                              style: const TextStyle(color: Colors.white)),
+                          child: Text(tz, style: const TextStyle(color: Colors.white)),
                         ))
                     .toList(),
                 onChanged: (val) {
@@ -128,39 +131,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   }
                 },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
             ],
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                radius: 60,
+                radius: 70,
+                backgroundColor: primaryColor.withOpacity(0.2),
                 backgroundImage:
                     _imageFile != null ? FileImage(_imageFile!) : null,
                 child: _imageFile == null
-                    ? const Icon(Icons.person, size: 60)
+                    ? Icon(Icons.person, size: 80, color: primaryColor)
                     : null,
               ),
             ),
-            const SizedBox(height: 12),
-            Text('Username: $username', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text('NIM: $nim', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text('Kelas: $kelas', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _logout,
-              child: const Text('Logout'),
+            const SizedBox(height: 25),
+            Text(
+              username,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildInfoRow('NIM', nim),
+            _buildInfoRow('Kelas', kelas),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            '$label:',
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ],
       ),
     );
   }

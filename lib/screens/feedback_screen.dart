@@ -5,16 +5,44 @@ class FeedbackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Colors.deepPurple.shade600;
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: primaryColor,
         title: const Text('Kesan & Pesan'),
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(
-          'Saran: Semoga kelas TPM semakin jaya lagi.\n'
-          'Kesan: Sangat menyenangkan, bukan? hehe',
-          style: TextStyle(fontSize: 16),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Saran:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Semoga kelas TPM semakin jaya lagi.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              'Kesan:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Sangat menyenangkan, bukan? hehe',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
         ),
       ),
     );
