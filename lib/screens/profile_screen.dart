@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert'; // untuk base64 encode/decode
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart'; // Menambahkan geolocator
+import 'package:url_launcher/url_launcher.dart'; // Menambahkan url_launcher
 import '../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -66,13 +67,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final offset = timezoneOffsets[selectedTimezone] ?? 0;
     final convertedTime = now.add(Duration(hours: offset));
     final formattedTime =
-        '${convertedTime.hour.toString().padLeft(2, '0')}:'
-        '${convertedTime.minute.toString().padLeft(2, '0')}:'
+        '${convertedTime.hour.toString().padLeft(2, '0')}:' 
+        '${convertedTime.minute.toString().padLeft(2, '0')}:' 
         '${convertedTime.second.toString().padLeft(2, '0')}';
 
     setState(() {
       displayedTime = formattedTime;
     });
+  }
+
+  // Fungsi untuk mengambil lokasi pengguna
+  Future<void> _getLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Mengecek apakah layanan lokasi diaktifkan
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Layanan lokasi tidak aktif.')),
+      );
+      return;
+    }
+
+    // Memeriksa izin untuk akses lokasi
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Izin lokasi ditolak.')),
+        );
+        return;
+      }
+    }
+
+    // Mendapatkan posisi sekarang
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    // Menampilkan lokasi di Google Maps
+    String googleMapsUrl =
+        'https://www.google.com/maps?q=${position.latitude},${position.longitude}';
+    if (await canLaunch(googleMapsUrl)) {
+      await launch(googleMapsUrl);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tidak dapat membuka Google Maps')),
+      );
+    }
   }
 
   Future<void> _pickImage() async {
@@ -152,8 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: CircleAvatar(
                 radius: 70,
                 backgroundColor: primaryColor.withOpacity(0.2),
-                backgroundImage:
-                    _imageBytes != null ? MemoryImage(_imageBytes!) : null,
+                backgroundImage: _imageBytes != null ? MemoryImage(_imageBytes!) : null,
                 child: _imageBytes == null
                     ? Icon(Icons.person, size: 80, color: primaryColor)
                     : null,
@@ -171,6 +213,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 10),
             _buildInfoRow('NIM', nim),
             _buildInfoRow('Kelas', kelas),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _getLocation, // Tombol untuk mendapatkan lokasi
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Lihat Lokasi Saya', style: TextStyle(
+      color: Colors.white, // Mengganti warna teks tombol
+    ),),
+            ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -185,7 +241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: const Text(
                   'Logout',
-                  style: TextStyle(fontSize: 18),
+                  style: TextStyle(
+      color: Colors.white, // Mengganti warna teks tombol
+    ),
                 ),
               ),
             ),
